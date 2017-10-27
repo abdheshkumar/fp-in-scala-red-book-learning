@@ -27,7 +27,7 @@ object Chapter1App {
       case MyCons(head, _) => head
     }
 
-    def setHead[A](l: MyList[A], a: A) = l match {
+    def setHead[A](l: MyList[A], a: A): MyList[Any] = l match {
       case MyNil => sys.error("setHead on empty list")
       case MyCons(_, t) => MyCons(a, t)
     }
@@ -85,19 +85,33 @@ object Chapter1App {
 
     def apply[A](as: A*): MyList[A] = if (as.isEmpty) MyNil else MyCons(as.head, apply(as.tail: _*))
 
-    def sum2(ns: MyList[Int]) = foldLeft(ns, 0)(_ + _)
+    def sum2(ns: MyList[Int]): Int = foldLeft(ns, 0)(_ + _)
 
-    def product2(ns: MyList[Int]) = foldLeft(ns, 1)((x, y) => x * y)
+    def product2(ns: MyList[Int]): Int = foldLeft(ns, 1)((x, y) => x * y)
 
     def length[A](l: MyList[A]): Int = foldRight(l, 0)((_, acc) => acc + 1)
 
-    def reverse[A](as: MyList[A]) = foldLeft(as, MyList[A]())((acc, h) => MyCons(h, acc))
+    def reverse[A](as: MyList[A]): MyList[A] = foldLeft(as, MyList[A]())((acc, h) => MyCons(h, acc))
+
+    def foldRightUsingFoldLeft[A, B](l: MyList[A], z: B)(f: (A, B) => B): B = foldLeft(l, z)((left, right) => f(right, left))
+
+    def foldRightUsingFoldLeft_1[A, B](l: MyList[A], z: B)(f: (A, B) => B): B =
+      foldLeft(l, (b: B) => b)((g, a) => b => g(f(a, b)))(z)
+
+    def foldLeftUsingFoldRight[A, B](l: MyList[A], z: B)(f: (B, A) => B): B =
+      foldRight(l, (b: B) => b)((a, g) => b => g(f(b, a)))(z)
+
+    def appendViaFoldRight[A](l: MyList[A], r: MyList[A]): MyList[A] = foldRight(l, r)(MyCons(_, _))
+
+    def lengthUsingFoldRight[A](as: MyList[A]): Int = foldRight(as, 0)((_, acc) => acc + 1)
+
+    def add1(l: MyList[Int]): MyList[Int] = foldRight(l, MyNil: MyList[Int])((h, t) => MyCons(h + 1, t))
   }
 
   def main(args: Array[String]): Unit = {
     import MyList._
     //Improving type inference for higher-order functions
-    val l = reverse(MyList(1, 2, 3, 4, 3, 5))
+    val l = add1(MyList(1, 2, 3, 4, 3, 5))
     println(l)
 
   }
